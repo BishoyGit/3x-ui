@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
     container_name: 3xui_app
-     hostname: vpn.bishoy.de
+    hostname: vpn.bishoy.de
     volumes:
       - $PWD/db/:/etc/x-ui/
       - $PWD/cert/:/root/cert/
