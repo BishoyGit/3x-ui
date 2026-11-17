@@ -51,6 +51,17 @@ services:
     tty: true
     restart: unless-stopped
 
+  # Dokploy's HTTPS router targets this bridge-network proxy. X-UI stays on the
+  # host network so runtime-configured Xray inbound ports bind directly to host.
+  xui-panel-proxy:
+    image: nginx:alpine
+    container_name: 3xui_panel_proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./nginx-xui.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+
   postgres:
     image: postgres:16-alpine
     container_name: 3xui_postgres
