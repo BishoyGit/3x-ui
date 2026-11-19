@@ -1,5 +1,8 @@
 services:
   3xui:
+    depends_on:
+      xui-db-init:
+        condition: service_completed_successfully
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -51,11 +54,24 @@ services:
     tty: true
     restart: unless-stopped
 
+  # Run a one-time, backup-first reset before X-UI starts. The marker prevents
+  # clearing data again on later deployments.
+  xui-db-init:
+    image: python:3.13-alpine
+    container_name: 3xui_db_init
+    volumes:
+      - $PWD/db/:/etc/x-ui/
+      - ./xui-db-init.py:/xui-db-init.py:ro
+    command: ["python", "/xui-db-init.py"]
+    restart: "no"
+
   # Dokploy's HTTPS router targets this bridge-network proxy. X-UI stays on the
   # host network so runtime-configured Xray inbound ports bind directly to host.
   xui-panel-proxy:
     image: nginx:alpine
     container_name: 3xui_panel_proxy
+    depends_on:
+      - 3xui
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
